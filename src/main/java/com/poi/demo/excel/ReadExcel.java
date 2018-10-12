@@ -20,6 +20,11 @@ public class ReadExcel {
 
     private static Logger log = LoggerFactory.getLogger(ReadExcel.class);
 
+    /**
+     * 使用迭代器进行 read
+     * @param path
+     * @return
+     */
     public static String readXls(String path) {
 
         log.debug("开始 读取xls格式Excel文件 ...\n");
