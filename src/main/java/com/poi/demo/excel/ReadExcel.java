@@ -1,5 +1,6 @@
 package com.poi.demo.excel;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -14,11 +15,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 public class ReadExcel {
 
     private static Logger log = LoggerFactory.getLogger(ReadExcel.class);
+
+    private static final ReadExcel RE = new ReadExcel();
 
     /**
      * 使用迭代器进行 read
@@ -125,9 +132,86 @@ public class ReadExcel {
         return text.toString();
     }
 
+    //判断是否是姓名
+    public boolean isName(String name){
+        return Pattern.matches("[\\u4e00-\\u9fa5]{2,3}",name);
+    }
+    //判断是否是数字
+    public boolean isNumber(String number){
+        return Pattern.matches("[\\d]+[.]?[\\d]*",number);
+    }
+
+    public static void readOutputExcelOnceEmp(){
+        System.out.println("---readOutputExcelOnceEmp begin");
+
+
+
+        boolean isName = true;
+        ArrayList<HashMap<String,Float>> lm = new ArrayList<HashMap<String,Float>>();
+
+        HSSFWorkbook excel = null;
+        try {
+            FileInputStream is = new FileInputStream("C:\\Users\\HSF2015\\Desktop\\workData.xls");
+            System.out.println("开启 FileInputStream 获取Excel路径: " + "C:\\Users\\HSF2015\\Desktop\\workData.xls" + "\n");
+
+            excel = new HSSFWorkbook(is);
+            System.out.println("获取路径下的Excel文件: " + excel + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        //获取第一个sheet
+        HSSFSheet sheet0 = excel.getSheetAt(0);
+        System.out.println("获取Excel文件中的第一个 sheet: " + sheet0 + "\n");
+
+        for(int i=0;i<sheet0.getLastRowNum();i++){
+
+            HSSFRow row = sheet0.getRow(i);
+
+
+            //判断第一列是否是姓名
+            if(RE.isName(sheet0.getRow(i).getCell(0).toString()) && i+1>=5){
+                System.out.print("第"+i+"行 是姓名行\t");
+
+
+                String name = "";
+                Float number = 0F;
+
+                for(int j=0;j<row.getLastCellNum();j++){
+
+                    HSSFCell cell = row.getCell(j);
+                    String cellValue = cell.toString().trim();
+
+
+                    if(RE.isName(cellValue)){
+                        System.out.print(cellValue+"\t");
+                        name = cellValue;
+                    }else if(RE.isNumber(cellValue)){
+                        System.out.print(cellValue+"\t");
+                        number = Float.valueOf(cellValue);
+                    }
+
+
+                }
+                HashMap map = new HashMap<String,Float>();
+                map.put(name,number);
+                lm.add(map);
+                System.out.println();
+
+            }else{
+                System.out.println("第"+i+"行 不是姓名行\t");
+                continue;
+            }
+        }
+
+        System.out.println(lm);
+
+        System.out.println("---readOutputExcelOnceEmp end");
+    }
 
     public static void main(String[] args) {
-        System.out.println(readXls("E:\\result\\2018-10-08-16-48-38.xls"));
+        readOutputExcelOnceEmp();
     }
 
 }
